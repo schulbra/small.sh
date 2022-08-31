@@ -3,7 +3,7 @@
 |---     Date:           2 - 5 - 22
 |----    Course:         CS 344 400 W2022
 |-----   Assignment:     3 :  Smallsh
-|------  Description:    This program results in the cre:
+|------  Description:    This program results in the creation of a script that:
 *		- Provides a prompt for running commands
 *		- Handles blank lines + comments
 *			- comments indicated via "#" symbol
@@ -52,18 +52,26 @@
 *-------------------------------------------------------------------------------------------------*/
 int foreGrndModeStateFlag = -1;
  void handlerSIGTSTP()
+ 
  {
+  //printf("_____________________________\n");
   if (foreGrndModeStateFlag == -1)
   {
-     char* foreGMSF_Prompt = "Foreground-Only Mode ON!\n";
+    
+     char* foreGMSF_Prompt = "            | ~ Foreground-Only Mode ON! ~ |\n";
+     printf("           ______________________________\n");
      write(STDOUT_FILENO, foreGMSF_Prompt, strlen(foreGMSF_Prompt));
+     printf("            |______________________________|\n");
      fflush(stdout);
      foreGrndModeStateFlag = 1;
   }
   else
   {
-     char* foreGMSF_Prompt = "Foreground-Only Mode OFF!\n";
+       printf("           _______________________________\n");
+            //char* foreGMSF_Prompt = "            | ~ Foreground-Only Mode OFF! ~ |\n";
+     char* foreGMSF_Prompt = "            | ~ Foreground-Only Mode OFF! ~ |\n";
      write(STDOUT_FILENO, foreGMSF_Prompt, strlen(foreGMSF_Prompt));
+          printf("            |_______________________________|\n");
      fflush(stdout);
      foreGrndModeStateFlag = 1;
   }
@@ -78,12 +86,12 @@ void expandVar(char* Command)
   char buffer[100] = { "\0" };
   char* p = Command;
   pid_t pid = getpid();
-  char replace[2049];
-  sprintf(replace, "%d", pid);
+  char swapCharEx[2049];
+  sprintf(swapCharEx, "%d", pid);
   while ((p = strstr(p, "$$")))
   {
      strncpy(buffer, Command, p - Command);
-     strcat(buffer, replace);
+     strcat(buffer, swapCharEx);
      strcat(buffer, p + strlen("$$"));
      strcpy(Command, buffer);
      p++;
@@ -152,17 +160,18 @@ void commandCD(char* dirPath)
    fflush(stdout);
   }
 }
+
 /*-------------------------------------------------------------------------------------------------
  - Used to change directory when CD command is entered:
 -------------------------------------------------------------------------------------------------*/
 void commandCD_Handler(char* Command_UI_Args[])
 {
- char* path;
+ char* Path;
   if (Command_UI_Args[1] == NULL)
-   path = getenv("HOME");
+   Path = getenv("HOME");
   else
-    path = Command_UI_Args[1];
-    commandCD(path);
+    Path = Command_UI_Args[1];
+    commandCD(Path);
 }
 
 /* Displays exit prompt:  v*/
@@ -181,8 +190,8 @@ void backgroundDestroyer(int* pids)
     {
      if (pids[i] != -2)
      {
-       int killValue = kill(pids[i], SIGKILL);
-       if (killValue == -1 && errno == ESRCH)
+       int terminateVal = kill(pids[i], SIGKILL);
+       if (terminateVal == -1 && errno == ESRCH)
         continue;
        else
        {
@@ -210,9 +219,10 @@ void statusCommand(int stat)
 - The status command prints out either the exit status or the terminating signal of the
    last ran background process:
 -------------------------------------------------------------------------------------------------*/
-void statusCommand(int* status)
+void statusCommand(int* Status)
 {
-    printf("Exit Value %d\n", *status);
+	/*printf("______________________________\n");*/
+    printf("Exit Value %d\n", *Status);
     fflush(stdout);
 }
 
@@ -227,7 +237,7 @@ int builtInCommCheck(char* Command_UI_Args[], int* pids, int* exitStatus)
  if (strcmp(Command_UI_Args[0], "cd") == 0)
  commandCD_Handler(Command_UI_Args);
 
- else if (strcmp(Command_UI_Args[0], "status") == 0)
+ else if (strcmp(Command_UI_Args[0], "Status") == 0)
  statusCommand(exitStatus);
 
  else if (strcmp(Command_UI_Args[0], "exit") == 0)
@@ -332,7 +342,7 @@ char* retInOut_Redirect(char* Command_UI_Args[], char* symbol)
  -----------------------------------------------------------------*/
 void InOut_Redirect(char* input, char* output)
 {
-    int fdStatus;
+    int fildeDescript_Status;
     if (input != NULL)
     {
      int inputFD = open(input, O_RDONLY);
@@ -341,8 +351,8 @@ void InOut_Redirect(char* input, char* output)
                 perror("open()");
                 exit(EXIT_FAILURE);
             }
-            fdStatus = dup2(inputFD, 0);
-            if (fdStatus == -1)
+            fildeDescript_Status = dup2(inputFD, 0);
+            if (fildeDescript_Status == -1)
             {
                 perror("error: ");
             }
@@ -352,8 +362,8 @@ void InOut_Redirect(char* input, char* output)
 	dup2(out, 1);
 
 
-	char* fdStatus[] = { ", NULL };
-	execvp(fdStatus[0], fdStatus);*/
+	char* fildeDescript_Status[] = { ", NULL };
+	execvp(fildeDescript_Status[0], fildeDescript_Status);*/
 
     if (output != NULL)
     {
@@ -363,8 +373,8 @@ void InOut_Redirect(char* input, char* output)
       perror("dup2");
       exit(EXIT_FAILURE);
      }
-     fdStatus = dup2(outputFD, 1);
-     if (fdStatus == -1)
+     fildeDescript_Status = dup2(outputFD, 1);
+     if (fildeDescript_Status == -1)
      {
       perror("error: ");
      }
@@ -400,14 +410,27 @@ void bgPIDsCheck_Print(int* pids)
     {
      if (WIFSIGNALED(bgExitStatus))
      {
-      printf("Background Pid Terminated %d\n", pids[i]);
+     /*     char* foreGMSF_Prompt = "            | ~ Foreground-Only Mode ON! ~ |\n";
+     printf("           ______________________________\n");*/
+      printf("           ___________________________________\n");
+      printf("            | ~ Background PID Terminated: %d\n ", pids[i]);
       fflush(stdout);
-      printf("Terminated By Signal %d\n", WTERMSIG(bgExitStatus));   
+      printf("           | ~ Terminated By Signal:        %d\n", WTERMSIG(bgExitStatus));
+      printf("            |___________________________________\n");   
       fflush(stdout);
      }
      if (WIFEXITED(bgExitStatus))
      {
-      printf("Background Pid %d Done: Exit Val %d\n", pids[i], WEXITSTATUS(bgExitStatus));
+    /*       printf("           ___________________________________\n");
+      printf("            | ~ Background Pid Terminated: %d\n ", pids[i]);
+      fflush(stdout);
+      printf("           | ~ Terminated By Signal:        %d\n", WTERMSIG(bgExitStatus));
+      printf("            |___________________________________\n");  */
+      printf("           ________________________________________\n");
+      printf("           | ~ Background Proc Finished With ID: %d\n ", pids[i]);
+      fflush(stdout);
+      printf("          | ~ Exit Value:                        %d\n",  WEXITSTATUS(bgExitStatus));
+      printf("           |_______________________________________\n");  
       fflush(stdout);
      }
       pids[i] = -2;
@@ -426,21 +449,21 @@ void nonBuiltIn_Cmd(char* Command_UI_Args[], int* pids, int* exitStatus, struct 
 {
     int length = lenCmdArgs(Command_UI_Args);
     int numOfPids = bgPIDsCount(pids);
-    int bckgrndMode = bgANDCharCheck(Command_UI_Args, length);
-    int childStatus, redirect;
+    int bgMode = bgANDCharCheck(Command_UI_Args, length);
+    int childStatus, Redirection_comm;
     char* execArgs[length];
     char* outputFile, *inputFile;
-    redirect = stdRedirectCheck(Command_UI_Args, length, bckgrndMode);
-    if (redirect)
+    Redirection_comm = stdRedirectCheck(Command_UI_Args, length, bgMode);
+    if (Redirection_comm)
     {
      inputFile = retInOut_Redirect(Command_UI_Args, "<");
      outputFile = retInOut_Redirect(Command_UI_Args, ">");
      InOut_Redirect_Man(Command_UI_Args, length);
     }
-    if (redirect && bckgrndMode)
+    if (Redirection_comm && bgMode)
     {
-     inputFile = bgAND_Input(inputFile, bckgrndMode);
-     outputFile = bgAND_Input(outputFile, bckgrndMode);
+     inputFile = bgAND_Input(inputFile, bgMode);
+     outputFile = bgAND_Input(outputFile, bgMode);
     }
     /* - cmd args are passed into execArgs as intial step for exectuion of any of
      the non-built in functions*/
@@ -470,7 +493,7 @@ void nonBuiltIn_Cmd(char* Command_UI_Args[], int* pids, int* exitStatus, struct 
       SIGTSTP_action.sa_handler = SIG_IGN;
       sigaction(SIGINT, &SIGINT_action, NULL);
       sigaction(SIGTSTP, &SIGTSTP_action, NULL);
-      if (redirect)
+      if (Redirection_comm)
         InOut_Redirect(inputFile, outputFile);
         *exitStatus = execvp(execArgs[0], execArgs);
         if (*exitStatus == -1)
@@ -481,10 +504,15 @@ void nonBuiltIn_Cmd(char* Command_UI_Args[], int* pids, int* exitStatus, struct 
          break;
          /* add comm explain ** */ 
           default:
-         if (bckgrndMode && foreGrndModeStateFlag == -1)
+         if (bgMode && foreGrndModeStateFlag == -1)
          {
+             /*//printf("  ________________________________________________________________________________   \n");
+         // printf("_________________________________\n",);*/
+          printf("          ___________________________________\n");
           pids[numOfPids] = spawnPid;
-          printf("Background PID  %d\n", spawnPid);
+          printf("           | ~ Background PID:  %d\n", spawnPid);
+          printf("           |__________________________________\n");
+         /* printf("Background PID  %d\n", spawnPid);*/
           fflush(stdout);
           spawnPid = waitpid(spawnPid, &childStatus, WNOHANG);
          }
@@ -631,6 +659,56 @@ int main(int argc, char* argv[])
 /*______________________________________________________|*/
 int main()
 {
+    printf(" _________________________________________________________________________________  \n");
+    printf("| -    Name: Brandon Schultz                                                 ---- | \n");
+    printf("| --   Date: 2-12-22                                                          --- | \n");
+    printf("| ---  Assignment 3: smallsh                                                   -- | \n");
+    printf("| ---- Description:    This program results in the creation of a script that:   - | \n");
+    printf("| ---       - Provides a prompt for running commands                            - | \n");
+    printf("| --        - Handles blank lines + comments                                   -- | \n");
+    printf("| -         - Provides expansion for $$ variable.                             --- | \n");
+    printf("| --        - Handles execution of the commands exit, cd, and status.        ---- | \n");
+    printf("| ---       - Executes other commands using the exec family of functions.     --- | \n");
+    printf("| ----      - Provides IO redirection support.                                 -- | \n");
+    printf("| ---       - Supports running of commands in back/fore-ground modes.           - | \n");
+    printf("| --        - Implements custom handlers for SIGINT and SIGTSTP signals.       -- | \n");
+    printf("| -                                                                           --- | \n");
+    printf("|_________________________________________________________________________________| \n\n");
+    
+    printf("  ________________________________________________________________________________   \n");
+    printf(" | -   Script Useage Information: | (chmod +x ./script) and run $ ./script   ---- |  \n");
+    printf(" |________________________________|_______________________________________________|  \n");
+    printf(" | --       __________________________________________________                --- |  \n");
+    printf(" | ---     |- The : symbol is a prompt for each new cmd line. |                -- |  \n");
+    printf(" | --      |_________________________________________________|                  - |  \n");    
+    printf(" | ----     _____________________________________                              -- |  \n"); 
+    printf(" | ---     |-- General syntax of a cmd line is:  ||                           --- |  \n");  
+    printf(" | --      |______________________________________||____________             ---- |  \n");
+    printf(" | -       | [arg...] |  [< input_file]  | [> output_file] [&] ||             --- |  \n");
+    printf(" | --      |__________|__________________|______________________||             -- |  \n");
+    printf(" | ---      ___________________________________                                 - |  \n"); 
+    printf(" | --      |--- Supported built-in commands:  |||                              -- |  \n");  
+    printf(" | -       |___________________________________|||_____________               --- |  \n");
+    printf(" | --      | status: |   Prints exit stat/signal              |||            ---- |  \n");
+    printf(" | ---     | cd:     |   Opens files/directories               |||            --- |  \n"); 
+    printf(" | ----    | exit:   |   Quits script                          |||             -- |  \n"); 
+    printf(" | ---     |_________|________________________________________|||               - |  \n");
+    printf(" | ---      ________________________________                                   -- |  \n"); 
+    printf(" | --      |---- Signals SIGINT & SIGTSTP: ||||                               --- |  \n");  
+    printf(" | -       |________________________________||||__________________           ---- |  \n");
+    printf(" | --      |         |   A CTRL-C command from the keyboard     ||||          --- |  \n");
+    printf(" | ---     | SIGINT: |   sends a SIGINT signal to parent process ||||          -- |  \n"); 
+    printf(" | ----    |         |   and all children at the same time      ||||           -- |  \n"); 
+    printf(" | ---     |_________|_________________________________________||||             - |  \n");
+    printf(" | --      |         |   A CTRL-Z command from the keyboard     ||||          --- |  \n");
+    printf(" | ---     | SIGSTP: |   sends a SIGSTP signal to parent process ||||          -- |  \n"); 
+    printf(" | ----    |         |   and all children at the same time      ||||           -- |  \n"); 
+    printf(" | ---     |_________|_________________________________________||||             - |  \n");
+    printf(" |________________________________________________________________________________|   \n");
+
+    
+    
+
  processCommandLine();
  return EXIT_SUCCESS;
 }
